@@ -1,6 +1,5 @@
 import type { Express } from "express"
 import { PrismaClient } from '@prisma/client'
-import { pick } from "lodash"
 const prisma = new PrismaClient()
 
 const PAGE_SIZE = 20;
