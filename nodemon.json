@@ -1,0 +1,10 @@
+{
+  "watch": [
+    "."
+  ],
+  "ignore": [
+    "/node_modules"
+  ],
+  "ext": "ts",
+  "exec": "ts-node ./index.ts"
+}
