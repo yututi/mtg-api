@@ -99,4 +99,33 @@ export const register = (app: Express) => {
 
   })
 
+
+  app.get("/api/card/detail/:uuid", async (req, res) => {
+    const card = await prisma.card.findUnique({
+      select: {
+        uuid: true,
+        name: true,
+        setCode: true,
+        rarity: true,
+        manaCost: true,
+        otherFaceUuid: true,
+        power: true,
+        toughness: true,
+        text: true,
+        flavorText: true,
+        loyalty: true,
+        types: true,
+        subTypes: true,
+        superTypes: true
+      },
+      where: {
+        uuid: req.params.uuid
+      }
+    })
+
+    if (card) {
+      return res.json(card)
+    }
+    res.status(404).send()
+  })
 }
