@@ -1,5 +1,6 @@
 import type { Express } from "express"
 import { PrismaClient } from '@prisma/client'
+import { pick } from "lodash"
 const prisma = new PrismaClient()
 
 const PAGE_SIZE = 20;
@@ -10,6 +11,7 @@ type PaginationQuery = {
   cost?: string
   types?: string[]
   rarity?: string[]
+  setCode?: string[]
 }
 
 export const register = (app: Express) => {
@@ -20,12 +22,11 @@ export const register = (app: Express) => {
 
     const andConditions = []
 
-    const manaCondition: { [key: string]: string } = {}
     if (query.cost) {
-      const g = /^(gt|lt|equals):([0-9]*)/.exec(query.cost)
-      if (g != null && g.length === 2) {
-        const condition = g[0]
-        const value = g[1]
+      const g = /^(gte|lte|equals):([0-9]*)/.exec(query.cost)
+      if (g != null && g.length > 2) {
+        const condition = g[1]
+        const value = g[2]
         andConditions.push({
           manaValue: {
             [condition]: Number(value)
@@ -48,24 +49,43 @@ export const register = (app: Express) => {
       })
     }
     if (query.types) {
-      andConditions.push(          {
+      andConditions.push({
         types: {
           hasEvery: query.types
         }
       })
     }
     if (query.rarity) {
-      andConditions.push(          {
+      andConditions.push({
         rarity: {
           in: query.rarity
         }
       })
     }
+    if (query.setCode) {
+      andConditions.push({
+        setCode: {
+          in: query.setCode
+        }
+      })
+    }
 
-    const count = await prisma.card.count()
+    const count = await prisma.card.count({
+      where: {
+        AND: andConditions,
+      }
+    })
     const cards = await prisma.card.findMany({
       skip: page * PAGE_SIZE,
       take: PAGE_SIZE,
+      select: {
+        uuid: true,
+        name: true,
+        setCode: true,
+        rarity: true,
+        manaCost: true,
+        otherFaceUuid: true
+      },
       where: {
         AND: andConditions,
       }
@@ -73,6 +93,7 @@ export const register = (app: Express) => {
 
     res.json({
       page,
+      pageSize: PAGE_SIZE,
       count,
       list: cards
     })
