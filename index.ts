@@ -1,8 +1,10 @@
 import express from "express"
 import * as OpenApiValidator from 'express-openapi-validator'
 import pino from "pino"
+import cors from "cors"
 
-import { register } from "./api/card"
+import { registerCardAPI } from "./api/card"
+import { registerSetAPI } from "./api/set"
 
 require('dotenv').config();
 
@@ -11,6 +13,9 @@ const logger = pino({
 })
 
 const app = express()
+app.use(cors({
+  origin: process.env.FRONTEND_HOST || ""
+}))
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(
@@ -21,7 +26,8 @@ app.use(
   }),
 );
 
-register(app)
+registerCardAPI(app)
+registerSetAPI(app)
 
 const port = process.env.PORT || 3000
 app.listen(port, () => {

@@ -13,13 +13,26 @@ type PaginationQuery = {
   setCode?: string[]
 }
 
-export const register = (app: Express) => {
+export const registerCardAPI = (app: Express) => {
 
   app.get("/api/card/page/:page", async (req, res) => {
     const query = req.query as PaginationQuery
     const page = Number(req.params.page)
 
     const andConditions = []
+    andConditions.push({
+      OR: [
+        {
+          isMainSpell: true
+        },
+        {
+          AND: [
+            { isMainSpell: false },
+            { isReversible: true }
+          ]
+        }
+      ]
+    })
 
     if (query.cost) {
       const g = /^(gte|lte|equals):([0-9]*)/.exec(query.cost)
@@ -50,7 +63,7 @@ export const register = (app: Express) => {
     if (query.types) {
       andConditions.push({
         types: {
-          hasEvery: query.types
+          hasSome: query.types
         }
       })
     }
@@ -75,7 +88,7 @@ export const register = (app: Express) => {
       }
     })
     const cards = await prisma.card.findMany({
-      skip: page * PAGE_SIZE,
+      skip: page ? page * PAGE_SIZE + 1 : 0,
       take: PAGE_SIZE,
       select: {
         uuid: true,
@@ -85,9 +98,18 @@ export const register = (app: Express) => {
         manaCost: true,
         otherFaceUuid: true
       },
+      distinct: ["uuid"],
       where: {
         AND: andConditions,
-      }
+      },
+      orderBy: [
+        {
+          manaValue: "asc",
+        },
+        {
+          colorIdentities: "asc"
+        }
+      ]
     })
 
     res.json({
