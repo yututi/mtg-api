@@ -1,9 +1,9 @@
 FROM node:18-bullseye
 
-WORKDIR /usr/app
+WORKDIR /app
 COPY . .
 
-RUN npm install
+RUN npm ci
 RUN npm run pg
 
 ARG PORT 80
