@@ -1,5 +1,5 @@
 import express from "express"
-import * as OpenApiValidator from 'express-openapi-validator'
+import { middleware } from 'express-openapi-validator'
 import pino from "pino"
 import cors from "cors"
 
@@ -19,7 +19,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(
-  OpenApiValidator.middleware({
+  middleware({
     apiSpec: './schema/openapi.yml',
     validateResponses: process.env.ENABLE_RESPONSE_VALIDATION === "yes",
     validateRequests: true
@@ -28,6 +28,10 @@ app.use(
 
 registerCardAPI(app)
 registerSetAPI(app)
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok" })
+})
 
 const port = process.env.PORT || 3000
 app.listen(port, () => {

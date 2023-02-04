@@ -3,7 +3,7 @@ FROM node:18-bullseye
 WORKDIR /app
 COPY . .
 
-RUN npm ci
+RUN npm i
 RUN npm run pg
 
 ARG PORT 80
