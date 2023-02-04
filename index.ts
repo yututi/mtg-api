@@ -22,7 +22,8 @@ app.use(
   middleware({
     apiSpec: './schema/openapi.yml',
     validateResponses: process.env.ENABLE_RESPONSE_VALIDATION === "yes",
-    validateRequests: true
+    validateRequests: true,
+    ignorePaths: (path: string) => { return !path.startsWith('/api') }
   }),
 );
 
